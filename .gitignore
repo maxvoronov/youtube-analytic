@@ -1,0 +1,21 @@
+# IDE project files
+.idea
+nbproject
+.buildpath
+.project
+.settings
+
+# Windows thumbnail cache
+Thumbs.db
+
+# Mac DS_Store files
+.DS_Store
+
+# Composer
+composer.phar
+n98-magerun.phar
+
+# System & settings
+.vagrant
+*.bak
+.env

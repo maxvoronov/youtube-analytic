@@ -1,0 +1,51 @@
+version: "3"
+services:
+  nginx:
+    container_name: ${CONTAINER_PREFIX}nginx
+    image: ${IMAGE_PREFIX}/nginx
+    build:
+      context: ${DOCKER_DIR}/nginx
+    stdin_open: true
+    tty: true
+    ports:
+      - 80:80
+    depends_on:
+      - phpfpm
+    links:
+      - phpfpm
+    volumes:
+      - ${SOURCE_DIR}/:/var/www
+    env_file:
+      - .env
+
+  phpfpm:
+    container_name: ${CONTAINER_PREFIX}phpfpm
+    image: ${IMAGE_PREFIX}/phpfpm
+    build:
+      context: ${DOCKER_DIR}/phpfpm
+    stdin_open: true
+    tty: true
+    ports:
+      - 9000:9000
+    depends_on:
+      - database
+    links:
+      - database
+    volumes:
+      - ${SOURCE_DIR}/:/var/www
+    env_file:
+      - .env
+
+  database:
+    container_name: ${CONTAINER_PREFIX}database
+    image: ${IMAGE_PREFIX}/mongo
+    build:
+      context: ${DOCKER_DIR}/mongo
+    stdin_open: true
+    tty: true
+    ports:
+      - 27017:27017
+    volumes:
+      - ${SHARED_DIR}/db/:/data/db
+    env_file:
+      - .env
