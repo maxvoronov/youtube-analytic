@@ -4,8 +4,67 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "828fa708a8767537e5619af5d9d3926b",
+    "content-hash": "c60555f1c64468a5dd8ee9ce75e8f15b",
     "packages": [
+        {
+            "name": "facile-it/mongodb-bundle",
+            "version": "0.6.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/facile-it/mongodb-bundle.git",
+                "reference": "62cee2cdfd0609ad12a531597258d89ea8f736af"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/facile-it/mongodb-bundle/zipball/62cee2cdfd0609ad12a531597258d89ea8f736af",
+                "reference": "62cee2cdfd0609ad12a531597258d89ea8f736af",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mongodb": "^1.1.5",
+                "mongodb/mongodb": "^1.0",
+                "php": "^7.0",
+                "symfony/framework-bundle": "^2.8 || ^3.0 || ^4.0"
+            },
+            "require-dev": {
+                "matthiasnoback/symfony-dependency-injection-test": "^2.3",
+                "phpunit/phpunit": "^6.0",
+                "symfony/console": "^2.8 || ^3.0 || ^4.0",
+                "symfony/web-profiler-bundle": "^2.8 || ^3.0 || ^4.0"
+            },
+            "suggest": {
+                "symfony/console": "Enables console commands",
+                "symfony/web-profiler-bundle": "Enables profiling of mongodb queries"
+            },
+            "type": "symfony-bundle",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Facile\\MongoDbBundle\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alessandro Galli",
+                    "email": "a.galli85@gmail.com"
+                }
+            ],
+            "description": "Bundle service integration of official [mongodb/mongo-php-library](https://github.com/mongodb/mongo-php-library) driver library",
+            "keywords": [
+                "database",
+                "mongodb",
+                "symfony"
+            ],
+            "time": "2018-01-18T08:59:32+00:00"
+        },
         {
             "name": "firebase/php-jwt",
             "version": "v5.0.0",

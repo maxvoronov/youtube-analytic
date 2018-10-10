@@ -1,0 +1,17 @@
+mongo_db_bundle:
+    data_collection: '%kernel.debug%'
+    clients:
+        default:
+            hosts:
+                - { host: 'database', port: 27017 }
+            username:         '%env(MONGO_INITDB_ROOT_USERNAME)%'
+            password:         '%env(MONGO_INITDB_ROOT_PASSWORD)%'
+            replicaSet:       '' # default null (no replica)
+            ssl:              false
+            connectTimeoutMS: 3000
+            readPreference:   primaryPreferred # see https://docs.mongodb.com/manual/reference/read-preference/#primary for info
+  
+    connections:
+        default:
+            client_name:    default
+            database_name:  'youtube'
