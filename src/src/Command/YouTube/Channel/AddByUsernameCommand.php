@@ -33,7 +33,7 @@ class AddByUsernameCommand extends Command
 
         $output->write('Adding videos... ');
         $videos = [];
-        foreach($channels as $channel) {
+        foreach ($channels as $channel) {
             $videos = array_merge($videos, $this->youtubeService->addVideosByChannel($channel));
         }
         $output->writeln('Done! Total added: ' . \count($videos));
