@@ -1,0 +1,45 @@
+{% extends 'layouts/base.html.twig' %}
+
+{% block body %}
+    <div class="container mt-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url('home') }}">Главная</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Канал "{{ channel.title }}"</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <div class="col-3">
+                <img src="{{ channel.thumbnails.medium.imageUrl }}" alt="">
+            </div>
+
+            <div class="col-9">
+                <h2>{{ channel.title }}</h2>
+                <div><a href="https://www.youtube.com/channel/{{ channel.channelId }}" class="text-muted" target="_blank">https://www.youtube.com/channel/{{ channel.channelId }}</a></div>
+                <div>{{ channel.description }}</div>
+
+                <div class="container my-5">
+                    <div class="row">
+                        <div class="col-3"><b><i class="fas fa-users"></i> Подписчики:</b></div>
+                        <div class="col-3">{{ channel.statistics.subscriberCount|number_format(0, '.', ' ') }}</div>
+                        <div class="col-3"><b><i class="fas fa-eye"></i> Просмотры:</b></div>
+                        <div class="col-3">{{ channel.statistics.viewCount|number_format(0, '.', ' ') }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3"><b><i class="fab fa-youtube"></i> Всего видео:</b></div>
+                        <div class="col-3">{{ channel.statistics.videoCount|number_format(0, '.', ' ') }}</div>
+                        <div class="col-3"><b><i class="fas fa-calendar-alt"></i> Канал создан:</b></div>
+                        <div class="col-3">{{ channel.publishedAt|date('d.m.Y H:i') }}</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-3"><b><i class="fas fa-thumbs-up"></i> Всего лайков:</b></div>
+                        <div class="col-3">{{ channelVotes.likes|number_format(0, '.', ' ') }}</div>
+                        <div class="col-3"><b><i class="fas fa-thumbs-down"></i> Всего дизлайков:</b></div>
+                        <div class="col-3">{{ channelVotes.dislikes|number_format(0, '.', ' ') }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use App\ValueObject\ChannelStatistics;
+use App\ValueObject\Thumbnail;
+
 class Channel extends AggregateRoot
 {
     protected $channelId;

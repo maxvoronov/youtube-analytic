@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use App\ValueObject\Thumbnail;
+use App\ValueObject\VideoStatistics;
+
 class Video extends AggregateRoot
 {
     protected $channelId;

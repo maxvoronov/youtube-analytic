@@ -1,12 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\ValueObject;
 
 class Thumbnail
 {
+    /** @var string */
     protected $type;
+
+    /** @var string */
     protected $imageUrl;
+
+    /** @var int */
     protected $width;
+
+    /** @var int */
     protected $height;
 
     public function __construct(string $type, string $imageUrl, int $width = 0, int $height = 0)

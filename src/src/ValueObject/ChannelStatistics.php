@@ -1,11 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\ValueObject;
 
 class ChannelStatistics
 {
+    /** @var int */
     protected $viewCount;
+
+    /** @var int */
     protected $videoCount;
+
+    /** @var int */
     protected $subscriberCount;
 
     public function __construct(int $viewCount = 0, int $videoCount = 0, int $subscriberCount = 0)

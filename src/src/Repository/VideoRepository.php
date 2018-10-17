@@ -2,22 +2,32 @@
 
 namespace App\Repository;
 
-use App\Entity\Thumbnail;
 use App\Entity\Video;
-use App\Entity\VideoStatistics;
+use App\Mapping\VideoMapping;
 use MongoDB\Database;
 use MongoDB\BSON\ObjectId;
-use MongoDB\BSON\UTCDateTime;
 
 class VideoRepository implements VideoRepositoryInterface
 {
+    /** @var VideoMapping */
+    protected $videoMapping;
+
+    /** @var Database */
     protected $mongoDb;
 
-    public function __construct(Database $mongoDb)
+    public function __construct(VideoMapping $videoMapping, Database $mongoDb)
     {
+        $this->videoMapping = $videoMapping;
         $this->mongoDb = $mongoDb;
     }
 
+    /**
+     * Find video in collection by Mongo ID
+     *
+     * @param string $id
+     * @return Video
+     * @throws \Exception
+     */
     public function get(string $id): Video
     {
         $result = $this->mongoDb->videos->findOne(['_id' => new ObjectId($id)]);
@@ -25,61 +35,21 @@ class VideoRepository implements VideoRepositoryInterface
             throw new \Exception('Video not found');
         }
 
-        $video = new Video(
-            $result['channel_id'] ?? '',
-            $result['video_id'] ?? '',
-            $result['title'] ?? '',
-            $result['description'] ?? '',
-            $result['published_at']->toDateTime()
-        );
-
-        foreach ($result['thumbnails'] as $type => $thumbnail) {
-            $video->addThumbnail(new Thumbnail(
-                $type,
-                $thumbnail['url'] ?? '',
-                $thumbnail['width'] ?? 0,
-                $thumbnail['height'] ?? 0
-            ));
-        }
-
-        $video->setStatistics(new VideoStatistics(
-            $result['like_count'] ?? 0,
-            $result['dislike_count'] ?? 0,
-            $result['comment_count'] ?? 0,
-            $result['favorite_count'] ?? 0
-        ));
+        $video = $this->videoMapping->mapMongoResultToObject($result);
         $video->setId((string)$result['_id']);
 
         return $video;
     }
 
+    /**
+     * Add video to collection
+     *
+     * @param Video $video
+     * @throws \Exception
+     */
     public function add(Video $video): void
     {
-        $params = [
-            'channel_id' => $video->getChannelId(),
-            'video_id' => $video->getVideoId(),
-            'title' => $video->getTitle(),
-            'description' => $video->getDescription(),
-            'published_at' => new UTCDateTime($video->getPublishedAt()->getTimestamp() * 1000),
-            'thumbnails' => [],
-        ];
-
-        foreach ($video->getThumbnails() as $thumbnail) {
-            /** @var Thumbnail $thumbnail */
-            $params['thumbnails'][$thumbnail->getType()] = [
-                'url' => $thumbnail->getImageUrl(),
-                'width' => $thumbnail->getWidth(),
-                'height' => $thumbnail->getHeight(),
-            ];
-        }
-
-        $stats = $video->getStatistics();
-        $params['statistics'] = [
-            'like_count' => $stats->getLikeCount(),
-            'dislike_count' => $stats->getDislikeCount(),
-            'comment_count' => $stats->getCommentCount(),
-            'favorite_count' => $stats->getFavoriteCount(),
-        ];
+        $params = $this->videoMapping->mapObjectToMongoParams($video);
 
         $result = $this->mongoDb->videos->insertOne($params);
         if ($result->getInsertedCount() === 0) {
@@ -89,33 +59,16 @@ class VideoRepository implements VideoRepositoryInterface
         $video->setId((string)$result->getInsertedId());
     }
 
+    /**
+     * Update or add video to collection
+     *
+     * @param Video $video
+     * @param bool $upsert
+     * @throws \Exception
+     */
     public function save(Video $video, bool $upsert = true): void
     {
-        $params = [
-            'channel_id' => $video->getChannelId(),
-            'video_id' => $video->getVideoId(),
-            'title' => $video->getTitle(),
-            'description' => $video->getDescription(),
-            'published_at' => new UTCDateTime($video->getPublishedAt()->getTimestamp() * 1000),
-            'thumbnails' => [],
-        ];
-
-        foreach ($video->getThumbnails() as $thumbnail) {
-            /** @var Thumbnail $thumbnail */
-            $params['thumbnails'][$thumbnail->getType()] = [
-                'url' => $thumbnail->getImageUrl(),
-                'width' => $thumbnail->getWidth(),
-                'height' => $thumbnail->getHeight(),
-            ];
-        }
-
-        $stats = $video->getStatistics();
-        $params['statistics'] = [
-            'like_count' => $stats->getLikeCount(),
-            'dislike_count' => $stats->getDislikeCount(),
-            'comment_count' => $stats->getCommentCount(),
-            'favorite_count' => $stats->getFavoriteCount(),
-        ];
+        $params = $this->videoMapping->mapObjectToMongoParams($video);
 
         $result = $this->mongoDb->videos->updateOne(
             ['_id' => new ObjectId($video->getId())],
@@ -132,6 +85,12 @@ class VideoRepository implements VideoRepositoryInterface
         }
     }
 
+    /**
+     * Remove video from collection
+     *
+     * @param Video $video
+     * @throws \Exception
+     */
     public function remove(Video $video): void
     {
         $result = $this->mongoDb->videos->deleteOne(

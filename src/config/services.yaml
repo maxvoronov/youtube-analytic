@@ -7,6 +7,9 @@ services:
     MongoDB\Database:
         alias: 'mongo.connection'
 
+    League\Fractal\Manager:
+        class: League\Fractal\Manager
+
     App\:
         resource: '../src/*'
         exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
@@ -24,6 +27,9 @@ services:
 
     App\Repository\VideoRepositoryInterface:
         class: App\Repository\VideoRepository
+
+    App\Repository\StatsRepositoryInterface:
+        class: App\Repository\StatsRepository
 
     App\Repository\YoutubeRepositoryInterface:
         class: App\Repository\YoutubeApiRepository

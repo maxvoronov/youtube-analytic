@@ -3,15 +3,16 @@
 namespace App\Repository;
 
 use App\Entity\Channel;
-use App\Entity\ChannelStatistics;
-use App\Entity\Thumbnail;
 use App\Entity\Video;
-use App\Entity\VideoStatistics;
+use App\ValueObject\ChannelStatistics;
+use App\ValueObject\Thumbnail;
+use App\ValueObject\VideoStatistics;
 use Google_Client;
 use Google_Service_YouTube;
 
 class YoutubeApiRepository implements YoutubeRepositoryInterface
 {
+    /** @var Google_Service_YouTube */
     protected $youtubeApi;
 
     public function __construct(Google_Client $apiClient)
@@ -19,50 +20,46 @@ class YoutubeApiRepository implements YoutubeRepositoryInterface
         $this->youtubeApi = new Google_Service_YouTube($apiClient);
     }
 
+    /**
+     * Try to find channel by ID via API
+     *
+     * @param string $id
+     * @return Channel
+     */
     public function findChannelById(string $id): Channel
     {
-        // TODO: Implement findChannelById() method.
+        $result = $this->youtubeApi->channels->listChannels(
+            'id,snippet,statistics',
+            ['id' => $id]
+        );
+        $channels = $this->loadChannelsByApiResult($result);
+
+        return array_shift($channels);
     }
 
-
+    /**
+     * Try to find channels by username (owner) via API
+     *
+     * @param string $username
+     * @return array
+     */
     public function findChannelsByUser(string $username): array
     {
-        $channels = [];
         $result = $this->youtubeApi->channels->listChannels(
             'id,snippet,statistics',
             ['forUsername' => $username]
         );
 
-        foreach ($result->items as $item) {
-            $channelStats = new ChannelStatistics(
-                (int)$item->statistics->viewCount,
-                (int)$item->statistics->videoCount,
-                (int)$item->statistics->subscriberCount
-            );
-
-            $channel = new Channel(
-                $item->id,
-                $item->snippet->title,
-                $item->snippet->description,
-                $item->snippet->customUrl,
-                new \DateTime($item->snippet->publishedAt),
-                $channelStats
-            );
-            foreach ($item->snippet->thumbnails as $type => $thumbnailItem) {
-                $channel->addThumbnail(new Thumbnail(
-                    $type,
-                    $thumbnailItem->url,
-                    $thumbnailItem->width,
-                    $thumbnailItem->height
-                ));
-            }
-
-            $channels[$item->id] = $channel;
-        }
-
-        return $channels;
+        return $this->loadChannelsByApiResult($result);
     }
 
+    /**
+     * Load videos for channel
+     *
+     * @param Channel $channel
+     * @param int $limit
+     * @return array
+     */
     public function findVideosByChannel(Channel $channel, int $limit = 0): array
     {
         $videos = [];
@@ -87,33 +84,91 @@ class YoutubeApiRepository implements YoutubeRepositoryInterface
                     break 2;
                 }
 
-                $video = new Video(
-                    $channel->getChannelId(),
-                    $item->id->videoId,
-                    $item->snippet->title,
-                    $item->snippet->description,
-                    new \DateTime($item->snippet->publishedAt)
-                );
-
-                foreach ($item->snippet->thumbnails as $type => $thumbnailItem) {
-                    $video->addThumbnail(new Thumbnail(
-                        $type,
-                        $thumbnailItem->url,
-                        $thumbnailItem->width,
-                        $thumbnailItem->height
-                    ));
-                }
-
+                $video = $this->loadVideosByApiResult($channel, $item);
                 $videos[$item->id->videoId] = $video;
                 $params['pageToken'] = $result->nextPageToken;
                 $totalProcessed++;
             }
-        } while($totalProcessed < $limit);
+        } while ($totalProcessed < $limit);
 
-        return $this->loadStatisticForVideo($videos);
+        return $this->loadStatisticForVideos($videos);
     }
 
-    protected function loadStatisticForVideo(array $videos): array
+    /**
+     * Convert API response to array of channel objects
+     *
+     * @param $result
+     * @return array
+     */
+    protected function loadChannelsByApiResult($result): array
+    {
+        $channels = [];
+        foreach ($result->items as $item) {
+            $channelStats = new ChannelStatistics(
+                (int)$item->statistics->viewCount,
+                (int)$item->statistics->videoCount,
+                (int)$item->statistics->subscriberCount
+            );
+
+            $channel = new Channel(
+                (string)$item->id,
+                (string)$item->snippet->title,
+                (string)$item->snippet->description,
+                (string)$item->snippet->customUrl,
+                new \DateTime($item->snippet->publishedAt),
+                $channelStats
+            );
+            foreach ($item->snippet->thumbnails as $type => $thumbnailItem) {
+                $channel->addThumbnail(new Thumbnail(
+                    $type,
+                    $thumbnailItem->url,
+                    $thumbnailItem->width,
+                    $thumbnailItem->height
+                ));
+            }
+
+            $channels[$item->id] = $channel;
+        }
+
+        return $channels;
+    }
+
+    /**
+     * Convert API response to array of video object
+     *
+     * @param Channel $channel
+     * @param $result
+     * @return Video
+     */
+    protected function loadVideosByApiResult(Channel $channel, $result): Video
+    {
+        $video = new Video(
+            $channel->getChannelId(),
+            (string)$result->id->videoId,
+            (string)$result->snippet->title,
+            (string)$result->snippet->description,
+            new \DateTime($result->snippet->publishedAt)
+        );
+
+        foreach ($result->snippet->thumbnails as $type => $thumbnailItem) {
+            $video->addThumbnail(new Thumbnail(
+                $type,
+                $thumbnailItem->url,
+                $thumbnailItem->width,
+                $thumbnailItem->height
+            ));
+        }
+
+        return $video;
+    }
+
+    /**
+     * Additional query for loading statistics of videos
+     *
+     * @param array $videos
+     * @return array
+     */
+    protected function loadStatisticForVideos(array $videos): array
     {
         $ids = array_keys($videos);
         $result = $this->youtubeApi->videos->listVideos('statistics', ['id' => implode(',', $ids)]);

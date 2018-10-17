@@ -1,12 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\ValueObject;
 
 class VideoStatistics
 {
+    /** @var int */
     protected $likeCount;
+
+    /** @var int */
     protected $dislikeCount;
+
+    /** @var int */
     protected $commentCount;
+
+    /** @var int */
     protected $favoriteCount;
 
     public function __construct(

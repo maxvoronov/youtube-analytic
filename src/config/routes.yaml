@@ -1,3 +1,9 @@
-index:
+home:
   path: /
-  controller: App\Controller\DefaultController::execute
+  controller: App\Controller\HomeController::execute
+
+channel_view:
+  path: /channel/{id}
+  controller: App\Controller\ViewController::execute
+  requirements:
+    id: '[a-zA-Z0-9\-_]+'

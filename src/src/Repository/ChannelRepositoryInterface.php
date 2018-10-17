@@ -13,4 +13,6 @@ interface ChannelRepositoryInterface
     public function save(Channel $channel, bool $upsert = true): void;
 
     public function remove(Channel $channel): void;
+
+    public function findByChannelId(string $channelId): Channel;
 }
